@@ -2,7 +2,7 @@
 
 [Click to install 🌐](https://raw.githubusercontent.com/EricWvi/chat-toc/main/chat-toc.user.js)
 <br>
-[点击安装 🇨🇳](https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.user.js)
+[点击安装 🇨🇳](https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js)
 
 支持网站 Supported sites:
 - ChatGPT
