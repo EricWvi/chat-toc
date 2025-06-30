@@ -3,7 +3,7 @@
 // @description     Add a draggable Table of Contents for common AI websites.
 // @updateURL       https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js
 // @downloadURL     https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js
-// @version         1.4.0
+// @version         1.4.1
 // @author          Eric Wang
 // @namespace       ChatTOC
 // @copyright       2025, Eric Wang (https://github.com/EricWvi)
@@ -427,7 +427,8 @@
             const toc = document.getElementById('copilot-chat-toc');
             if (!toc || !tocContainer) return;
             // Convert to a number (removing "px")
-            let leftValue = parseInt(toc.style.left, 10);
+            let leftStr = window.getComputedStyle(toc).left;
+            let leftValue = parseInt(leftStr, 10);
             if (isVisible) {
                 leftValue -= 180;
                 toc.style.left = leftValue + "px";
