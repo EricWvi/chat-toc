@@ -3,7 +3,7 @@
 // @description     Add a draggable Table of Contents for common AI websites.
 // @updateURL       https://raw.githubusercontent.com/EricWvi/chat-toc/main/chat-toc.user.js
 // @downloadURL     https://raw.githubusercontent.com/EricWvi/chat-toc/main/chat-toc.user.js
-// @version         1.4.2
+// @version         1.4.3
 // @author          Eric Wang
 // @namespace       ChatTOC
 // @copyright       2025, Eric Wang (https://github.com/EricWvi)
@@ -12,13 +12,14 @@
 // @match           https://github.com/copilot/*
 // @match           https://chatgpt.com
 // @match           https://chatgpt.com/*
-// @match           https://claude.ai/chat
+// @match           https://claude.ai
+// @match           https://claude.ai/new
 // @match           https://claude.ai/chat/*
 // @match           https://chat.deepseek.com
 // @match           https://chat.deepseek.com/*
 // @match           https://chat.qwen.ai
-// @match           https://chat.qwen.ai/*
-// @match           https://yuanbao.tencent.com/chat
+// @match           https://chat.qwen.ai/c/*
+// @match           https://yuanbao.tencent.com
 // @match           https://yuanbao.tencent.com/chat/*
 // @match           https://chat.minimaxi.com
 // @match           https://chat.minimaxi.com/*
