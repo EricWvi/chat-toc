@@ -3,7 +3,7 @@
 // @description     Add a draggable Table of Contents for common AI websites.
 // @updateURL       https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js
 // @downloadURL     https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js
-// @version         1.4.3
+// @version         1.4.4
 // @author          Eric Wang
 // @namespace       ChatTOC
 // @copyright       2025, Eric Wang (https://github.com/EricWvi)
@@ -93,7 +93,7 @@
                 .filter((_, idx) => idx % 2 == 0);
         },
         'doubao.com': function () {
-            return [...getElementsByXPath(`//*[@id="root"]/div[1]/div/div[3]/div[1]/div[1]/div/div/div[2]/div/div[1]/div/div/div[2]/div`)]
+            return [...getElementsByXPath(`//*[@id="root"]/div[1]/div/div[3]/div/main/div/div/div[2]/div/div[1]/div/div/div[2]/div`)]
                 .filter((_, idx) => idx % 2 == 0);
         },
         'default': function () {
