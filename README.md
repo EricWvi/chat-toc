@@ -16,8 +16,9 @@
 - 智谱清言 ChatGLM
 - 豆包 Doubao
 
-Tips:
+提示 Tips:
 - 目录头可拖拽，且位置会被保存记忆 TOC header is draggable. Your layout stays saved.
 - 将鼠标停留在过长被折叠的目录项上可显示全部内容 Hover over truncated items to view full content.
+- 如果目录没有出现，可以尝试刷新，刷新之后如果没有，可以提 issue 🤣 If the directory doesn't appear, try refreshing the page. Still missing? Report an issue. XD 
 
 This script is developed with assistance from [Claude AI](https://claude.ai/).
