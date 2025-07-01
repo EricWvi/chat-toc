@@ -3,7 +3,7 @@
 // @description     Add a draggable Table of Contents for common AI websites.
 // @updateURL       https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js
 // @downloadURL     https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js
-// @version         1.4.4
+// @version         1.4.5
 // @author          Eric Wang
 // @namespace       ChatTOC
 // @copyright       2025, Eric Wang (https://github.com/EricWvi)
@@ -276,7 +276,7 @@
                 box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
             }
 
-            #copilot-chat-toc.collapse {
+            #copilot-chat-toc.chat-toc-collapse {
                 width: 120px;
             }
 
@@ -443,11 +443,11 @@
             if (isVisible) {
                 leftValue -= 180;
                 toc.style.left = leftValue + "px";
-                toc.classList.remove('collapse');
+                toc.classList.remove('chat-toc-collapse');
             } else {
                 leftValue += 180;
                 toc.style.left = leftValue + "px";
-                toc.classList.add('collapse');
+                toc.classList.add('chat-toc-collapse');
             }
         });
 
