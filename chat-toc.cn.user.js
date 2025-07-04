@@ -3,7 +3,7 @@
 // @description     Add a draggable Table of Contents for common AI websites.
 // @updateURL       https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js
 // @downloadURL     https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js
-// @version         1.4.5
+// @version         1.4.6
 // @author          Eric Wang
 // @namespace       ChatTOC
 // @copyright       2025, Eric Wang (https://github.com/EricWvi)
@@ -61,7 +61,7 @@
     const strategies = {
         'chatgpt.com': function () {
             return [...document.querySelectorAll('article')]
-                .filter(article => article.firstElementChild.innerText.includes('You said:'))
+                .filter((_, idx) => idx % 2 == 0)
                 .map(article => article.querySelector('div'));
         },
         'chat.qwen.ai': function () {
