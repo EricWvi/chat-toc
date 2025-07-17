@@ -1,5 +1,8 @@
 # chat-toc
 
+> Chrome 使用油猴插件需要打开开发者模式
+> Requirements: Tampermonkey Extension + Developer Mode on
+
 [Click to install 🌐](https://raw.githubusercontent.com/EricWvi/chat-toc/main/chat-toc.user.js)
 <br>
 [点击安装 🇨🇳](https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js)
