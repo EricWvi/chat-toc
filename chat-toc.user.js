@@ -3,7 +3,7 @@
 // @description     Add a draggable Table of Contents for common AI websites.
 // @updateURL       https://raw.githubusercontent.com/EricWvi/chat-toc/main/chat-toc.user.js
 // @downloadURL     https://raw.githubusercontent.com/EricWvi/chat-toc/main/chat-toc.user.js
-// @version         1.5.0
+// @version         1.5.2
 // @author          Eric Wang
 // @namespace       ChatTOC
 // @copyright       2025, Eric Wang (https://github.com/EricWvi)
@@ -40,6 +40,7 @@
     let lastMessageTexts = [];
     let isDragging = false;
     let dragOffset = { x: 0, y: 0 };
+    let tocIsUpdating = false;
     let currentQuestionIndex = -1;
     let currentQuestionUpdateInterval = null;
 
@@ -144,12 +145,12 @@
 
     // Save position to localStorage
     function savePosition(x, y) {
-        localStorage.setItem('copilot-toc-position', JSON.stringify({ x, y }));
+        localStorage.setItem('chat-toc-position', JSON.stringify({ x, y }));
     }
 
     // Load position from localStorage
     function loadPosition() {
-        const saved = localStorage.getItem('copilot-toc-position');
+        const saved = localStorage.getItem('chat-toc-position');
         if (saved) {
             try {
                 return JSON.parse(saved);
@@ -223,7 +224,7 @@
         const position = loadPosition();
 
         tocContainer = document.createElement('div');
-        tocContainer.id = 'copilot-chat-toc';
+        tocContainer.id = 'tm-chat-toc';
         tocContainer.innerHTML = `
             <div id="toc-header">
                 <h3>Chat TOC</h3>
@@ -236,7 +237,7 @@
 
         // Add styles using CSS custom properties
         const styles = createThemeStyles() + `
-            #copilot-chat-toc {
+            #tm-chat-toc {
                 position: fixed;
                 left: ${position.x}px;
                 top: ${position.y}px;
@@ -250,7 +251,7 @@
                 box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
             }
 
-            #copilot-chat-toc.chat-toc-collapse {
+            #tm-chat-toc.chat-toc-collapse {
                 width: 120px;
             }
 
@@ -388,13 +389,13 @@
         `;
 
         // Remove existing styles and add new ones
-        const existingStyles = document.getElementById('copilot-toc-styles');
+        const existingStyles = document.getElementById('chat-toc-styles');
         if (existingStyles) {
             existingStyles.remove();
         }
 
         const styleElement = document.createElement('style');
-        styleElement.id = 'copilot-toc-styles';
+        styleElement.id = 'chat-toc-styles';
         styleElement.textContent = styles;
         document.head.appendChild(styleElement);
 
@@ -417,7 +418,7 @@
                 tocContent.classList.add('hidden');
                 toggleButton.textContent = '+';
             }
-            const toc = document.getElementById('copilot-chat-toc');
+            const toc = document.getElementById('tm-chat-toc');
             if (!toc || !tocContainer) return;
             // Convert to a number (removing "px")
             let leftStr = window.getComputedStyle(toc).left;
@@ -472,9 +473,16 @@
 
     // Find the current question based on viewport position
     function findCurrentQuestion() {
-        const host = window.location.hostname.replace(/^www\./, '');
-        const extractor = strategies[host] || strategies['default'];
-        const userMessages = extractor();
+        // Use the message IDs we created instead of extractor strategies
+        const userMessages = [];
+        let index = 0;
+        while (true) {
+            const messageId = `user-message-${index}`;
+            const messageElement = document.getElementById(messageId);
+            if (!messageElement) break;
+            userMessages.push(messageElement);
+            index++;
+        }
 
         if (userMessages.length === 0) return -1;
 
@@ -493,13 +501,21 @@
         return 0;
     }    // Update the current question highlight in TOC
     function updateCurrentQuestion() {
-        const newCurrentIndex = findCurrentQuestion();
+        // Prevent updates while TOC is being rebuilt
+        if (tocIsUpdating) {
+            return;
+        }
 
-        if (newCurrentIndex !== currentQuestionIndex) {
-            currentQuestionIndex = newCurrentIndex;
+        const newCurrentIndex = findCurrentQuestion();
+        const tocItems = document.querySelectorAll('.toc-item');
+
+        // Ensure the new index is valid for the current TOC
+        const validIndex = (newCurrentIndex >= 0 && newCurrentIndex < tocItems.length) ? newCurrentIndex : -1;
+
+        if (validIndex !== currentQuestionIndex) {
+            currentQuestionIndex = validIndex;
 
             // Update TOC highlighting
-            const tocItems = document.querySelectorAll('.toc-item');
             tocItems.forEach((item, index) => {
                 if (index === currentQuestionIndex) {
                     item.classList.add('current');
@@ -565,6 +581,12 @@
 
         console.log('Updating TOC - message count changed from', lastMessageCount, 'to', userMessages.length);
 
+        // Set flag to prevent updateCurrentQuestion from running during TOC rebuild
+        tocIsUpdating = true;
+
+        // Reset current question index when TOC content changes
+        currentQuestionIndex = -1;
+
         // Update tracking variables
         lastMessageCount = userMessages.length;
         lastMessageTexts = [];
@@ -612,8 +634,11 @@
             tocList.appendChild(listItem);
         });
 
-        // Update current question highlighting
-        updateCurrentQuestion();
+        // Use setTimeout to ensure DOM rendering is complete before clearing flag and updating highlights
+        setTimeout(() => {
+            tocIsUpdating = false;
+            updateCurrentQuestion();
+        }, 0);
     }
 
     // Initialize the TOC
@@ -637,6 +662,7 @@
 
     // Wait for the page to load and then initialize
     function waitForMessages() {
+        console.log("Chat TOC script")
         const checkForMessages = () => {
             // Determine which strategy to use
             const host = window.location.hostname.replace(/^www\./, '');
@@ -652,7 +678,7 @@
                 }
                 currentQuestionUpdateInterval = setInterval(() => {
                     updateCurrentQuestion();
-                }, 1000); // Update every 1 second
+                }, 500); // Update every 500 milliseconds
 
                 // Set up a mutation observer to update TOC when new messages are added
                 const observer = new MutationObserver(() => {
@@ -679,7 +705,6 @@
 
         checkForMessages();
     }
-    console.log("Chat TOC script")
 
     // Start when DOM is ready
     if (document.readyState === 'loading') {
