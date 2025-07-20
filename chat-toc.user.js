@@ -3,7 +3,7 @@
 // @description     Add a draggable Table of Contents for common AI websites.
 // @updateURL       https://raw.githubusercontent.com/EricWvi/chat-toc/main/chat-toc.user.js
 // @downloadURL     https://raw.githubusercontent.com/EricWvi/chat-toc/main/chat-toc.user.js
-// @version         1.4.6
+// @version         1.5.0
 // @author          Eric Wang
 // @namespace       ChatTOC
 // @copyright       2025, Eric Wang (https://github.com/EricWvi)
@@ -40,6 +40,8 @@
     let lastMessageTexts = [];
     let isDragging = false;
     let dragOffset = { x: 0, y: 0 };
+    let currentQuestionIndex = -1;
+    let currentQuestionUpdateInterval = null;
 
     function getElementsByXPath(xpath) {
         const result = document.evaluate(
@@ -101,69 +103,43 @@
         }
     };
 
-    // Detect system theme
-    function getSystemTheme() {
-        // Check GitHub's theme first
-        const htmlElement = document.documentElement;
-        const bodyElement = document.body;
+    // Create CSS styles with @media queries for theme support
+    function createThemeStyles() {
+        return `
+            /* Light theme (default) */
+            :root {
+                --toc-bg: #ffffff;
+                --toc-header-bg: #f6f8fa;
+                --toc-border: #d0d7de;
+                --toc-text: #24292f;
+                --toc-text-secondary: #24292f;
+                --toc-text-muted: #656d76;
+                --toc-hover-bg: #f6f8fa;
+                --toc-highlight-bg: #0969da20;
+                --toc-highlight-border: #0969da;
+                --toc-scrollbar-track: #f6f8fa;
+                --toc-scrollbar-thumb: #d0d7de;
+                --toc-scrollbar-thumb-hover: #afb8c1;
+            }
 
-        // GitHub sets data-color-mode attribute
-        const colorMode = htmlElement.getAttribute('data-color-mode');
-        const colorTheme = htmlElement.getAttribute('data-color-theme') ||
-            htmlElement.getAttribute('data-theme');
-
-        // Check various theme indicators
-        if (colorMode === 'dark' || colorTheme === 'dark' ||
-            bodyElement.classList.contains('dark') ||
-            bodyElement.classList.contains('dark-theme')) {
-            return 'dark';
-        }
-
-        if (colorMode === 'light' || colorTheme === 'light' ||
-            bodyElement.classList.contains('light') ||
-            bodyElement.classList.contains('light-theme')) {
-            return 'light';
-        }
-
-        // Fallback to system preference
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            return 'dark';
-        }
-
-        return 'light';
-    }
-
-    // Get theme-specific colors
-    function getThemeColors(theme) {
-        if (theme === 'dark') {
-            return {
-                background: '#0d1117',
-                headerBackground: '#161b22',
-                border: '#30363d',
-                text: '#f0f6fc',
-                secondaryText: '#e6edf3',
-                mutedText: '#7d8590',
-                hoverBackground: '#21262d',
-                highlightBackground: '#1f6feb20',
-                scrollbarTrack: '#161b22',
-                scrollbarThumb: '#30363d',
-                scrollbarThumbHover: '#484f58'
-            };
-        } else {
-            return {
-                background: '#ffffff',
-                headerBackground: '#f6f8fa',
-                border: '#d0d7de',
-                text: '#24292f',
-                secondaryText: '#24292f',
-                mutedText: '#656d76',
-                hoverBackground: '#f6f8fa',
-                highlightBackground: '#0969da20',
-                scrollbarTrack: '#f6f8fa',
-                scrollbarThumb: '#d0d7de',
-                scrollbarThumbHover: '#afb8c1'
-            };
-        }
+            /* Dark theme */
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --toc-bg: #0d1117;
+                    --toc-header-bg: #161b22;
+                    --toc-border: #30363d;
+                    --toc-text: #f0f6fc;
+                    --toc-text-secondary: #e6edf3;
+                    --toc-text-muted: #7d8590;
+                    --toc-hover-bg: #21262d;
+                    --toc-highlight-bg: #1f6feb20;
+                    --toc-highlight-border: #1f6feb;
+                    --toc-scrollbar-track: #161b22;
+                    --toc-scrollbar-thumb: #30363d;
+                    --toc-scrollbar-thumb-hover: #484f58;
+                }
+            }
+        `;
     }
 
     // Save position to localStorage
@@ -244,8 +220,6 @@
             tocContainer.remove();
         }
 
-        const theme = getSystemTheme();
-        const colors = getThemeColors(theme);
         const position = loadPosition();
 
         tocContainer = document.createElement('div');
@@ -260,16 +234,16 @@
             </div>
         `;
 
-        // Add styles with theme colors
-        const styles = `
+        // Add styles using CSS custom properties
+        const styles = createThemeStyles() + `
             #copilot-chat-toc {
                 position: fixed;
                 left: ${position.x}px;
                 top: ${position.y}px;
                 width: 300px;
                 max-height: 60vh;
-                background: ${colors.background};
-                border: 1px solid ${colors.border};
+                background: var(--toc-bg);
+                border: 1px solid var(--toc-border);
                 border-radius: 8px;
                 z-index: 10000;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
@@ -286,8 +260,8 @@
                 justify-content: space-between;
                 align-items: center;
                 padding: 10px 15px;
-                background: ${colors.headerBackground};
-                border-bottom: 1px solid ${colors.border};
+                background: var(--toc-header-bg);
+                border-bottom: 1px solid var(--toc-border);
                 border-radius: 8px 8px 0 0;
                 cursor: move;
                 user-select: none;
@@ -299,7 +273,7 @@
 
             #toc-header h3 {
                 margin: 0;
-                color: ${colors.text};
+                color: var(--toc-text);
                 font-size: 14px;
                 font-weight: 600;
                 pointer-events: none;
@@ -308,7 +282,7 @@
             #toc-toggle {
                 background: none;
                 border: none;
-                color: ${colors.mutedText};
+                color: var(--toc-text-muted);
                 cursor: pointer;
                 font-size: 16px;
                 padding: 0;
@@ -322,7 +296,7 @@
             }
 
             #toc-toggle:hover {
-                color: ${colors.text};
+                color: var(--toc-text);
             }
 
             #toc-content {
@@ -346,15 +320,22 @@
                 text-align: left;
                 padding: 8px 15px;
                 cursor: pointer;
-                border-bottom: 1px solid ${colors.border};
-                color: ${colors.secondaryText};
+                border-bottom: 1px solid var(--toc-border);
+                color: var(--toc-text-secondary);
                 font-size: 12px;
                 line-height: 1.4;
                 transition: background-color 0.15s ease;
             }
 
             .toc-item:hover {
-                background: ${colors.hoverBackground};
+                background: var(--toc-hover-bg);
+            }
+
+            .toc-item.current {
+                background: var(--toc-highlight-bg);
+                border-left: 3px solid var(--toc-highlight-border);
+                padding-left: 12px;
+                font-weight: 600;
             }
 
             .toc-item:last-child {
@@ -362,7 +343,7 @@
             }
 
             .toc-item-number {
-                color: ${colors.mutedText};
+                color: var(--toc-text-muted);
                 font-weight: 600;
                 margin-right: 8px;
             }
@@ -379,16 +360,16 @@
             }
 
             #toc-content::-webkit-scrollbar-track {
-                background: ${colors.scrollbarTrack};
+                background: var(--toc-scrollbar-track);
             }
 
             #toc-content::-webkit-scrollbar-thumb {
-                background: ${colors.scrollbarThumb};
+                background: var(--toc-scrollbar-thumb);
                 border-radius: 3px;
             }
 
             #toc-content::-webkit-scrollbar-thumb:hover {
-                background: ${colors.scrollbarThumbHover};
+                background: var(--toc-scrollbar-thumb-hover);
             }
 
             /* Drag indicator */
@@ -398,7 +379,7 @@
                 left: 6px;
                 top: 50%;
                 transform: translateY(-50%);
-                color: ${colors.mutedText};
+                color: var(--toc-text-muted);
                 font-size: 10px;
                 line-height: 1;
                 letter-spacing: -1px;
@@ -489,6 +470,67 @@
         return text.trim();
     }
 
+    // Find the current question based on viewport position
+    function findCurrentQuestion() {
+        const host = window.location.hostname.replace(/^www\./, '');
+        const extractor = strategies[host] || strategies['default'];
+        const userMessages = extractor();
+
+        if (userMessages.length === 0) return -1;
+
+        const viewportHeight = window.innerHeight;
+        const threshold = viewportHeight * 0.3;
+
+        // Find the last message that appears above or at 30% of viewport
+        for (let i = userMessages.length - 1; i >= 0; i--) {
+            const messageRect = userMessages[i].getBoundingClientRect();
+            if (messageRect.top <= threshold) {
+                return i;
+            }
+        }
+
+        // If no message is at or above 30%, return the first message
+        return 0;
+    }    // Update the current question highlight in TOC
+    function updateCurrentQuestion() {
+        const newCurrentIndex = findCurrentQuestion();
+
+        if (newCurrentIndex !== currentQuestionIndex) {
+            currentQuestionIndex = newCurrentIndex;
+
+            // Update TOC highlighting
+            const tocItems = document.querySelectorAll('.toc-item');
+            tocItems.forEach((item, index) => {
+                if (index === currentQuestionIndex) {
+                    item.classList.add('current');
+                } else {
+                    item.classList.remove('current');
+                }
+            });
+
+            // Auto-scroll TOC to show current item
+            if (currentQuestionIndex >= 0 && currentQuestionIndex < tocItems.length) {
+                const currentItem = tocItems[currentQuestionIndex];
+                const tocContent = document.getElementById('toc-content');
+
+                if (currentItem && tocContent) {
+                    const itemRect = currentItem.getBoundingClientRect();
+                    const contentRect = tocContent.getBoundingClientRect();
+
+                    // Check if item is outside visible area
+                    const itemTop = currentItem.offsetTop;
+                    const contentScrollTop = tocContent.scrollTop;
+                    const contentHeight = tocContent.clientHeight;
+
+                    if (itemTop < contentScrollTop || itemTop > contentScrollTop + contentHeight - currentItem.offsetHeight) {
+                        // Scroll to center the current item
+                        tocContent.scrollTop = itemTop - contentHeight / 2 + currentItem.offsetHeight / 2;
+                    }
+                }
+            }
+        }
+    }
+
     // Check if TOC needs to be updated
     function needsUpdate(userMessages) {
         if (userMessages.length !== lastMessageCount) {
@@ -560,10 +602,7 @@
                     });
 
                     // Highlight the message briefly
-                    const theme = getSystemTheme();
-                    const colors = getThemeColors(theme);
-
-                    targetMessage.style.backgroundColor = colors.highlightBackground;
+                    targetMessage.style.backgroundColor = 'var(--toc-highlight-bg)';
                     setTimeout(() => {
                         targetMessage.style.backgroundColor = '';
                     }, 2000);
@@ -572,6 +611,9 @@
 
             tocList.appendChild(listItem);
         });
+
+        // Update current question highlighting
+        updateCurrentQuestion();
     }
 
     // Initialize the TOC
@@ -580,45 +622,15 @@
         updateTOC();
     }
 
-    // Watch for theme changes
+    // Watch for theme changes (simplified since CSS handles theme detection)
     function setupThemeWatcher() {
-        // Watch for changes to theme attributes
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' &&
-                    (mutation.attributeName === 'data-color-mode' ||
-                        mutation.attributeName === 'data-color-theme' ||
-                        mutation.attributeName === 'data-theme' ||
-                        mutation.attributeName === 'class')) {
-                    // Recreate TOC with new theme
-                    setTimeout(() => {
-                        if (tocContainer) {
-                            initTOC();
-                        }
-                    }, 100);
-                }
-            });
-        });
-
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['data-color-mode', 'data-color-theme', 'data-theme', 'class']
-        });
-
-        observer.observe(document.body, {
-            attributes: true,
-            attributeFilter: ['class']
-        });
-
-        // Also listen for system theme changes
+        // Only listen for system theme changes to potentially trigger layout updates
         if (window.matchMedia) {
             const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
             mediaQuery.addEventListener('change', () => {
-                setTimeout(() => {
-                    if (tocContainer) {
-                        initTOC();
-                    }
-                }, 100);
+                // Theme change is handled automatically by CSS
+                // No need to recreate the TOC, just trigger a small update if needed
+                console.log('System theme changed');
             });
         }
     }
@@ -633,6 +645,14 @@
             if (userMessages.length > 0) {
                 initTOC();
                 setupThemeWatcher();
+
+                // Set up interval for current question tracking
+                if (currentQuestionUpdateInterval) {
+                    clearInterval(currentQuestionUpdateInterval);
+                }
+                currentQuestionUpdateInterval = setInterval(() => {
+                    updateCurrentQuestion();
+                }, 1000); // Update every 1 second
 
                 // Set up a mutation observer to update TOC when new messages are added
                 const observer = new MutationObserver(() => {
