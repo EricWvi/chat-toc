@@ -12,8 +12,8 @@
 // @match           https://github.com/copilot/*
 // @match           https://chatgpt.com
 // @match           https://chatgpt.com/*
-// @match           https://kimi.com
-// @match           https://kimi.com/*
+// @match           https://www.kimi.com
+// @match           https://www.kimi.com/*
 // @match           https://claude.ai
 // @match           https://claude.ai/new
 // @match           https://claude.ai/chat/*
