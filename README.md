@@ -17,6 +17,7 @@
 - 通义 Tongyi
 - Qwen
 - MiniMax
+- Kimi
 - 智谱清言 ChatGLM
 - 豆包 Doubao
 
