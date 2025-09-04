@@ -19,14 +19,15 @@ The script supports the following AI chat platforms:
 
 1. **GitHub Copilot** (`github.com/copilot`)
 2. **ChatGPT** (`chatgpt.com`)
-3. **Claude AI** (`claude.ai`)
-4. **DeepSeek Chat** (`chat.deepseek.com`)
-5. **Qwen Chat** (`chat.qwen.ai`)
-6. **Yuanbao (Tencent)** (`yuanbao.tencent.com`)
-7. **MiniMax Chat** (`chat.minimaxi.com`)
-8. **Doubao** (`doubao.com`)
-9. **ChatGLM** (`chatglm.cn`)
-10. **Tongyi Qianwen** (`tongyi.com`)
+3. **Kimi Chat** (`kimi.com`)
+4. **Claude AI** (`claude.ai`)
+5. **DeepSeek Chat** (`chat.deepseek.com`)
+6. **Qwen Chat** (`chat.qwen.ai`)
+7. **Yuanbao (Tencent)** (`yuanbao.tencent.com`)
+8. **MiniMax Chat** (`chat.minimaxi.com`)
+9. **Doubao** (`doubao.com`)
+10. **ChatGLM** (`chatglm.cn`)
+11. **Tongyi Qianwen** (`tongyi.com`)
 
 ## Technical Architecture
 
@@ -205,8 +206,15 @@ Potential improvements could include:
 
 ## Version History
 
-- **v1.4.6**: Current version with theme adaptation and improved drag functionality
-- Supports 10+ AI chat platforms
+### Recent Updates (2025)
+- **v1.7.0**: Current version
+  - Added support for Kimi Chat (`kimi.com`)
+  - Fixed DeepSeek Chat compatibility issues
+  - Bug fixes and URL updates
+  - Now supports 11+ AI chat platforms
+
+### Previous Versions
+- **v1.4.6**: Theme adaptation and improved drag functionality
 - Enhanced performance and reliability
 - Persistent positioning and state management
 
