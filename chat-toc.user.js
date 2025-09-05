@@ -3,7 +3,7 @@
 // @description     Add a draggable Table of Contents for common AI websites.
 // @updateURL       https://raw.githubusercontent.com/EricWvi/chat-toc/main/chat-toc.user.js
 // @downloadURL     https://raw.githubusercontent.com/EricWvi/chat-toc/main/chat-toc.user.js
-// @version         1.7.0
+// @version         1.7.1
 // @author          Eric Wang
 // @namespace       ChatTOC
 // @copyright       2025, Eric Wang (https://github.com/EricWvi)
@@ -232,7 +232,7 @@
                 <h3>Chat TOC</h3>
                 <button id="toc-toggle">−</button>
             </div>
-            <div id="toc-content">
+            <div id="chat-toc-content">
                 <ul id="toc-list"></ul>
             </div>
         `;
@@ -302,13 +302,14 @@
                 color: var(--toc-text);
             }
 
-            #toc-content {
+            #chat-toc-content {
                 max-height: calc(60vh - 50px);
                 overflow-y: auto;
                 padding: 10px 0;
+                box-sizing: border-box;
             }
 
-            #toc-content.hidden {
+            #chat-toc-content.hidden {
                 display: none;
             }
 
@@ -349,6 +350,7 @@
                 color: var(--toc-text-muted);
                 font-weight: 600;
                 margin-right: 8px;
+                white-space: nowrap;
             }
 
             .toc-item-text {
@@ -358,20 +360,20 @@
             }
 
             /* Scrollbar styling */
-            #toc-content::-webkit-scrollbar {
+            #chat-toc-content::-webkit-scrollbar {
                 width: 6px;
             }
 
-            #toc-content::-webkit-scrollbar-track {
+            #chat-toc-content::-webkit-scrollbar-track {
                 background: var(--toc-scrollbar-track);
             }
 
-            #toc-content::-webkit-scrollbar-thumb {
+            #chat-toc-content::-webkit-scrollbar-thumb {
                 background: var(--toc-scrollbar-thumb);
                 border-radius: 3px;
             }
 
-            #toc-content::-webkit-scrollbar-thumb:hover {
+            #chat-toc-content::-webkit-scrollbar-thumb:hover {
                 background: var(--toc-scrollbar-thumb-hover);
             }
 
@@ -408,7 +410,7 @@
 
         // Add toggle functionality
         const toggleButton = document.getElementById('toc-toggle');
-        const tocContent = document.getElementById('toc-content');
+        const tocContent = document.getElementById('chat-toc-content');
 
         toggleButton.addEventListener('click', (e) => {
             e.stopPropagation(); // Prevent triggering drag
@@ -529,7 +531,7 @@
             // Auto-scroll TOC to show current item
             if (currentQuestionIndex >= 0 && currentQuestionIndex < tocItems.length) {
                 const currentItem = tocItems[currentQuestionIndex];
-                const tocContent = document.getElementById('toc-content');
+                const tocContent = document.getElementById('chat-toc-content');
 
                 if (currentItem && tocContent) {
                     const itemRect = currentItem.getBoundingClientRect();
