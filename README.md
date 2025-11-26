@@ -9,6 +9,7 @@
 [点击安装 🇨🇳](https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js)
 
 支持网站 Supported sites:
+- Gemini
 - ChatGPT
 - Claude
 - GitHub Copilot

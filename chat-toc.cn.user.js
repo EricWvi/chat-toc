@@ -3,7 +3,7 @@
 // @description     Add a draggable Table of Contents for common AI websites.
 // @updateURL       https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js
 // @downloadURL     https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js
-// @version         1.7.1
+// @version         1.8.0
 // @author          Eric Wang
 // @namespace       ChatTOC
 // @copyright       2025, Eric Wang (https://github.com/EricWvi)
@@ -12,6 +12,8 @@
 // @match           https://github.com/copilot/*
 // @match           https://chatgpt.com
 // @match           https://chatgpt.com/*
+// @match           https://gemini.google.com
+// @match           https://gemini.google.com/*
 // @match           https://www.kimi.com
 // @match           https://www.kimi.com/*
 // @match           https://claude.ai
@@ -68,6 +70,9 @@
             return [...document.querySelectorAll('article')]
                 .filter((_, idx) => idx % 2 == 0)
                 .map(article => article.querySelector('div'));
+        },
+        'gemini.google.com': function () {
+            return [...document.querySelectorAll('user-query-content')];
         },
         'kimi.com': function () {
             return [...document.querySelectorAll('[class*="user-content"]')];
@@ -143,6 +148,22 @@
                 }
             }
         `;
+    }
+
+    function toTrustedHtml(htmlString) {
+        let trustedHtmlString = htmlString;
+        if (window.trustedTypes && window.trustedTypes.createPolicy) {
+            // Create a policy that returns the input string as a TrustedHTML object.
+            // The policy name ('bypass-toc') must be unique within the page, 
+            // but it doesn't have to be listed in the CSP for this to work in a Userscript.
+            const policy = trustedTypes.createPolicy('bypass-toc', {
+                createHTML: (string) => string
+            });
+
+            // Use the policy to convert your string into a TrustedHTML object
+            trustedHtmlString = policy.createHTML(htmlString);
+        }
+        return trustedHtmlString;
     }
 
     // Save position to localStorage
@@ -227,7 +248,7 @@
 
         tocContainer = document.createElement('div');
         tocContainer.id = 'tm-chat-toc';
-        tocContainer.innerHTML = `
+        const tocHtmlContent = `
             <div id="toc-header">
                 <h3>Chat TOC</h3>
                 <button id="toc-toggle">−</button>
@@ -236,6 +257,8 @@
                 <ul id="toc-list"></ul>
             </div>
         `;
+
+        tocContainer.innerHTML = toTrustedHtml(tocHtmlContent);
 
         // Add styles using CSS custom properties
         const styles = createThemeStyles() + `
@@ -595,7 +618,7 @@
         lastMessageCount = userMessages.length;
         lastMessageTexts = [];
 
-        tocList.innerHTML = '';
+        tocList.innerHTML = toTrustedHtml('');
 
         userMessages.forEach((message, index) => {
             // Add an ID to the message for jumping
@@ -611,7 +634,7 @@
             // Create TOC item
             const listItem = document.createElement('li');
             listItem.className = 'toc-item';
-            listItem.innerHTML = `<span class="toc-item-number">${index + 1}.</span>`;
+            listItem.innerHTML = toTrustedHtml(`<span class="toc-item-number">${index + 1}.</span>`);
             const textSpan = document.createElement('span');
             textSpan.className = 'toc-item-text';
             textSpan.title = messageText;
