@@ -3,7 +3,7 @@
 // @description     Add a draggable Table of Contents for common AI websites.
 // @updateURL       https://raw.githubusercontent.com/EricWvi/chat-toc/main/chat-toc.user.js
 // @downloadURL     https://raw.githubusercontent.com/EricWvi/chat-toc/main/chat-toc.user.js
-// @version         1.8.0
+// @version         1.8.1
 // @author          Eric Wang
 // @namespace       ChatTOC
 // @copyright       2025, Eric Wang (https://github.com/EricWvi)
@@ -72,7 +72,7 @@
                 .map(article => article.querySelector('div'));
         },
         'gemini.google.com': function () {
-            return [...document.querySelectorAll('user-query-content')];
+            return [...document.querySelectorAll('user-query-content .query-text')];
         },
         'kimi.com': function () {
             return [...document.querySelectorAll('[class*="user-content"]')];
