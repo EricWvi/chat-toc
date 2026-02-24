@@ -3,7 +3,7 @@
 // @description     Add a draggable Table of Contents for common AI websites.
 // @updateURL       https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js
 // @downloadURL     https://gitee.com/ericwvi/chat-toc/raw/main/chat-toc.cn.user.js
-// @version         1.8.1
+// @version         1.9.0
 // @author          Eric Wang
 // @namespace       ChatTOC
 // @copyright       2025, Eric Wang (https://github.com/EricWvi)
@@ -47,6 +47,7 @@
     let tocIsUpdating = false;
     let currentQuestionIndex = -1;
     let currentQuestionUpdateInterval = null;
+    const host = window.location.hostname.replace(/^www\./, '');
 
     function getElementsByXPath(xpath) {
         const result = document.evaluate(
@@ -110,6 +111,22 @@
             return [];
         }
     };
+
+    function extractTextFromElement(element) {
+        let text = '';
+        switch (host) {
+            case 'gemini.google.com':
+                text = Array.from(element.children)
+                    .slice(1)
+                    .map(child => child.innerText.trim())
+                    .join('\n');
+                break;
+            default:
+                text = element.innerText.trim();
+                break;
+        }
+        return text;
+    }
 
     // Create CSS styles with @media queries for theme support
     function createThemeStyles() {
@@ -582,7 +599,7 @@
 
         // Check if any message text has changed
         for (let i = 0; i < userMessages.length; i++) {
-            const currentText = userMessages[i].innerText.trim();
+            const currentText = extractTextFromElement(userMessages[i]);
             if (currentText !== lastMessageTexts[i]) {
                 return true;
             }
@@ -626,7 +643,7 @@
             message.id = messageId;
 
             // Extract message text
-            const messageText = message.innerText.trim();
+            const messageText = extractTextFromElement(message);
             lastMessageTexts.push(messageText);
 
             if (!messageText) return;
@@ -692,7 +709,6 @@
         console.log("Chat TOC script")
         const checkForMessages = () => {
             // Determine which strategy to use
-            const host = window.location.hostname.replace(/^www\./, '');
             const extractor = strategies[host] || strategies['default'];
             const userMessages = extractor();
             if (userMessages.length > 0) {
